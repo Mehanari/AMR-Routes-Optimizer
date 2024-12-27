@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Src.Services
+namespace Src.Registry
 {
     public class ServiceNotAvailableException : Exception
     {

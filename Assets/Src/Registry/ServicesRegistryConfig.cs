@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Src.Services
+namespace Src.Registry
 {
     [Serializable]
     public class NameToVersion

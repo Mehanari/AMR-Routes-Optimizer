@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Src.Services
+namespace Src.Registry
 {
     public class ServicesRegistry : MonoBehaviour
     {
@@ -108,21 +107,19 @@ namespace Src.Services
                 {"name", serviceName},
                 {"version", serviceVersion}
             };
-            var fullUrl = AddQueryParametersToUrl(url, queryParameters);
+            var fullUrl = UrlHelper.AddQueryParametersToUrl(url, queryParameters);
             var response = await _httpClient.GetAsync(fullUrl);
             if (response.IsSuccessStatusCode)
             {
                 var serviceUrl = await response.Content.ReadAsStringAsync();
                 Debug.Log($"Service {serviceName} with version {serviceVersion} is available at {serviceUrl}");
+                serviceUrl = serviceUrl.Remove(0, 1);
+                serviceUrl = serviceUrl.Remove(serviceUrl.Length - 1, 1);
                 return serviceUrl;
             }
             throw new ServiceNotAvailableException($"Service {serviceName} with version {serviceVersion} is not available");
         }
 
-        private string AddQueryParametersToUrl(string url, Dictionary<string, string> queryParameters)
-        {
-            var queryString = string.Join("&", queryParameters.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-            return $"{url}?{queryString}";
-        }
+
     }
 }
