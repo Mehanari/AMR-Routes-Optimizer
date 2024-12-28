@@ -30,8 +30,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 674162668355425783}
   - {fileID: 3880693818910282150}
+  - {fileID: 674162668355425783}
   m_Father: {fileID: 8964212614742754877}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -397,6 +397,7 @@ GameObject:
   - component: {fileID: 9122909064960584233}
   - component: {fileID: 8494307855022540358}
   - component: {fileID: 7060310933905786519}
+  - component: {fileID: 7758973998047980281}
   m_Layer: 5
   m_Name: Ok
   m_TagString: Untagged
@@ -506,10 +507,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3083027394568807211}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 7758973998047980281}
+        m_TargetAssemblyTypeName: Src.AppQuit, Assembly-CSharp
+        m_MethodName: Quit
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -518,3 +519,15 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7758973998047980281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7509481882537152615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b29764d3b0d184d964bba808bf81b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

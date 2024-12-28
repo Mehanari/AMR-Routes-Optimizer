@@ -17,6 +17,8 @@ namespace Src
 
         [Header("Schemas")]
         [SerializeField] private SchemasListView listView;
+        [SerializeField] private SchemaEditor schemaEditor;
+        [SerializeField] private WorkstationEditor workstationEditor;
         [SerializeField] private SchemasOrchestrator schemasOrchestrator;
         private SchemasService _schemasService;
         
@@ -45,6 +47,7 @@ namespace Src
             tokenProvider.Init(authOrchestrator);
             logInView.Init(authOrchestrator, tokenProvider);
             listView.Init(schemasOrchestrator, solutionsOrchestrator);
+            schemaEditor.Init(schemasOrchestrator);
         }
     }
 }

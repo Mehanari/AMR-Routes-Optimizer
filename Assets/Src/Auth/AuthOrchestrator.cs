@@ -20,6 +20,7 @@ namespace Src.Auth
             var authServiceUrl = await _servicesRegistry.GetAuthServiceUrl();
             _authService.SetUrl(authServiceUrl);
             var token = await _authService.GetToken(username, password);
+            await _servicesRegistry.AddAuthServiceActivity();
             return token;
         }
     }

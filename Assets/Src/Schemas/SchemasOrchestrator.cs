@@ -22,6 +22,7 @@ namespace Src.Schemas
             var schemasServiceUrl = await _servicesRegistry.GetSchemasServiceUrl();
             _schemasService.SetUrl(schemasServiceUrl);
             var schemas = await _schemasService.GetAllSchemas();
+            await _servicesRegistry.AddSchemasServiceActivity();
             return schemas;
         }
 
@@ -30,7 +31,17 @@ namespace Src.Schemas
             var schemasServiceUrl = await _servicesRegistry.GetSchemasServiceUrl();
             _schemasService.SetUrl(schemasServiceUrl);
             var createdSchema = await _schemasService.CreateSchema();
+            await _servicesRegistry.AddSchemasServiceActivity();
             return createdSchema;
+        }
+        
+        public async Task<Schema> UpdateSchema(Schema schema)
+        {
+            var schemasServiceUrl = await _servicesRegistry.GetSchemasServiceUrl();
+            _schemasService.SetUrl(schemasServiceUrl);
+            var updatedSchema = await _schemasService.UpdateSchema(schema);
+            await _servicesRegistry.AddSchemasServiceActivity();
+            return updatedSchema;
         }
     }
 }

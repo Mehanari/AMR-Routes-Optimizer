@@ -9,6 +9,7 @@ namespace Src.Schemas
 {
     public class SchemasListView : MonoBehaviour
     {
+        [SerializeField] private GameObject loadingScreen;
         [SerializeField] private SchemaListItem itemPrefab;
         [SerializeField] private Transform itemsContainer;
         [SerializeField] private Button createButton;
@@ -44,12 +45,15 @@ namespace Src.Schemas
         
         public async void LoadSchemas()
         {
+            loadingScreen.SetActive(true);
             var schemas = await _schemasOrchestrator.GetAllSchemas();
+            loadingScreen.SetActive(false);
             foreach (var item in _items)
             {
                 item.Selected -= SelectSchema;
                 Destroy(item.gameObject);
             }
+            _items.Clear();
             foreach (var schema in schemas)
             {
                 var item = Instantiate(itemPrefab, itemsContainer);
