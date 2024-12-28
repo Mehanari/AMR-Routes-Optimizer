@@ -18,5 +18,9 @@ MonoBehaviour:
     version: 0.1.0
   - name: Auth
     version: 1.0.0
-  schemasServices: []
-  solutionsServices: []
+  schemasServices:
+  - name: Schemas
+    version: 1.0.0
+  solutionsServices:
+  - name: Solutions
+    version: 1.0.0

@@ -8,7 +8,6 @@ namespace Src.Auth
     {
         private AuthService _authService;
         private ServicesRegistry _servicesRegistry;
-        private string _token;
 
         public void Init(AuthService authService, ServicesRegistry servicesRegistry)
         {
@@ -20,20 +19,8 @@ namespace Src.Auth
         {
             var authServiceUrl = await _servicesRegistry.GetAuthServiceUrl();
             _authService.SetUrl(authServiceUrl);
-            _token = await _authService.GetToken(username, password);
-            return _token;
-        }
-        
-        public async Task<int> GetUserId()
-        {
-            var authServiceUrl = await _servicesRegistry.GetAuthServiceUrl();
-            _authService.SetUrl(authServiceUrl);
-            return await _authService.GetUserId(_token);
-        }
-        
-        public string GetCachedToken()
-        {
-            return _token;
+            var token = await _authService.GetToken(username, password);
+            return token;
         }
     }
 }

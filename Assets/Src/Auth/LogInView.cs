@@ -15,10 +15,12 @@ namespace Src.Auth
         [SerializeField] private UnityEvent onLoginSuccess = new();
         
         private AuthOrchestrator _authOrchestrator;
+        private TokenProvider _tokenProvider;
         
-        public void Init(AuthOrchestrator authOrchestrator)
+        public void Init(AuthOrchestrator authOrchestrator, TokenProvider tokenProvider)
         {
             _authOrchestrator = authOrchestrator;
+            _tokenProvider = tokenProvider;
         }
         
         private void Start()
@@ -40,6 +42,7 @@ namespace Src.Auth
             {
                 await _authOrchestrator.LogIn(username, password);
                 onLoginSuccess.Invoke();
+                _tokenProvider.SetCredentials(username, password);
             }
             catch (InvalidCredentialsException e)
             {
