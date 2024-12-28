@@ -1,4 +1,5 @@
-﻿using Src.Model;
+﻿using System;
+using Src.Model;
 using TMPro;
 using UnityEngine;
 
@@ -58,8 +59,16 @@ namespace Src.Schemas
                 Vector3 roundedPosition = Round(mousePositionWorld, Decimals);
                 _offset = transform.position - roundedPosition;
             }
+        }
+
+        private void OnMouseOver()
+        {
             if(Input.GetMouseButtonDown(1))
             {
+                Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10);
+                Vector3 mousePositionWorld = _camera.ScreenToWorldPoint(mousePosition);
+                RaycastHit2D hit = Physics2D.Raycast(mousePositionWorld, Vector2.zero);
+                Debug.Log("Right click on workstation: " + _workStation.Name);
                 _editor.gameObject.SetActive(true);
                 _editor.SetWorkstation(_workStation, this);
             }

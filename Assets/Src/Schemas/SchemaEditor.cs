@@ -11,9 +11,9 @@ namespace Src.Schemas
     public class SchemaEditor : MonoBehaviour
     {
         [SerializeField] private Button addWorkstationButton;
-        [SerializeField] private Button saveButton;
-        //[SerializeField] private TMP_InputField amrQuantityInput;
-        //SerializeField] private TMP_InputField amrCapacityInput;
+        [SerializeField] private Button saveButton; 
+        [SerializeField] private TMP_InputField amrQuantityInput;
+        [SerializeField] private TMP_InputField amrCapacityInput;
         [SerializeField] private WorkstationEditor workstationEditor;
         [SerializeField] private WorkstationBehaviour workstationPrefab;
         [SerializeField] private GameObject serviceErrorMessage;
@@ -32,11 +32,47 @@ namespace Src.Schemas
             addWorkstationButton.onClick.AddListener(OnAddWorkstationButtonClick);
             saveButton.onClick.AddListener(OnSaveButtonClick);
             workstationEditor.DeleteClicked += OnWorkstationDelete;
+            amrQuantityInput.onValueChanged.AddListener(OnAmrQuantityChanged);
+            amrCapacityInput.onValueChanged.AddListener(OnAmrCapacityChanged);
+        }
+
+        private void OnAmrCapacityChanged(string arg0)
+        {
+            if (!int.TryParse(arg0, out var capacity))
+            {
+                amrCapacityInput.text = _schema.AmrParameters.Capacity.ToString();
+            }
+            else
+            {
+                if (capacity < 0)
+                {
+                    capacity = 0;
+                    amrCapacityInput.text = capacity.ToString();
+                }
+                _schema.AmrParameters.Capacity = capacity;
+            }
+        }
+
+        private void OnAmrQuantityChanged(string arg0)
+        {
+            if (!int.TryParse(arg0, out var quantity))
+            {
+                amrQuantityInput.text = _schema.AmrParameters.Quantity.ToString();
+            }
+            else
+            {
+                if (quantity < 0)
+                {
+                    quantity = 0;
+                    amrQuantityInput.text = quantity.ToString();
+                }
+                _schema.AmrParameters.Quantity = quantity;
+            }
         }
 
         private void OnWorkstationDelete((WorkStation workstation, WorkstationBehaviour behaviour) obj)
         {
-            _schema.WorkStations.Remove(obj.workstation);
+            _schema.WorkStations.RemoveWhere(w => Equals(w, obj.workstation));
             _workstationBehaviours.Remove(obj.behaviour);
             Destroy(obj.behaviour.gameObject);
         }
@@ -91,8 +127,8 @@ namespace Src.Schemas
                 workstationBehaviour.Init(workStation, workstationEditor);
                 _workstationBehaviours.Add(workstationBehaviour);
             }
-            //amrCapacityInput.text = _schema.AmrParameters.Capacity.ToString();
-            //amrQuantityInput.text = _schema.AmrParameters.Quantity.ToString();
+            amrCapacityInput.text = _schema.AmrParameters.Capacity.ToString();
+            amrQuantityInput.text = _schema.AmrParameters.Quantity.ToString();
         }
 
         public void Clear()

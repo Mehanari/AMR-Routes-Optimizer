@@ -68,7 +68,7 @@ namespace Src.Schemas
                 emptyNameWarning.SetActive(true);
                 return;
             }
-            var nameIsTaken = _schema.WorkStations.Any(w => w.Name == newName);
+            var nameIsTaken = _schema.WorkStations.Any(w => w.Name == newName && !Equals(w, _workStation));
             if (nameIsTaken)
             {
                 takenNameWarning.SetActive(true);
