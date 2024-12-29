@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Src.Model;
 using Src.Registry;
 using UnityEngine;
@@ -21,7 +22,17 @@ namespace Src.Solutions
             var solutionsServiceUrl = await _servicesRegistry.GetSolutionsServiceUrl();
             _solutionsService.SetUrl(solutionsServiceUrl);
             var isSolved = await _solutionsService.IsSchemaSolved(schema.Id);
+            await _servicesRegistry.AddSolutionsServiceActivity();
             return isSolved;
+        }
+        
+        public async Task<Dictionary<int, List<string>>>GetSolution(Schema schema)
+        {
+            var solutionsServiceUrl = await _servicesRegistry.GetSolutionsServiceUrl();
+            _solutionsService.SetUrl(solutionsServiceUrl);
+            var solution = await _solutionsService.GetSolution(schema);
+            await _servicesRegistry.AddSolutionsServiceActivity();
+            return solution;
         }
     }
 }

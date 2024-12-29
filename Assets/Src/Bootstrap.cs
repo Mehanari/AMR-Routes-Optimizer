@@ -20,10 +20,13 @@ namespace Src
         [SerializeField] private SchemaEditor schemaEditor;
         [SerializeField] private WorkstationEditor workstationEditor;
         [SerializeField] private SchemasOrchestrator schemasOrchestrator;
+        [SerializeField] private SchemaSaver schemaSaver;
+        [SerializeField] private WorkstationsBehaviourContainer workstationsBehaviourContainer;
         private SchemasService _schemasService;
         
         [Header("Solutions")]
         [SerializeField] private SolutionsOrchestrator solutionsOrchestrator;
+        [SerializeField] private SolutionView solutionView;
         private SolutionsService _solutionsService;
         
         [Header("Services")]
@@ -47,7 +50,9 @@ namespace Src
             tokenProvider.Init(authOrchestrator);
             logInView.Init(authOrchestrator, tokenProvider);
             listView.Init(schemasOrchestrator, solutionsOrchestrator);
-            schemaEditor.Init(schemasOrchestrator);
+            schemaSaver.Init(schemasOrchestrator);
+            schemaEditor.Init(workstationsBehaviourContainer, schemaSaver);
+            solutionView.Init(solutionsOrchestrator, schemaSaver, workstationsBehaviourContainer);
         }
     }
 }

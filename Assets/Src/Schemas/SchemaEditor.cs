@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Src.Model;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
-using Vector3 = System.Numerics.Vector3;
 
 namespace Src.Schemas
 {
@@ -22,23 +23,27 @@ namespace Src.Schemas
         [SerializeField] private Transform transportationCostsContainer;
         [SerializeField] private DepotTransportationCostView depotTransportationCostPrefab;
         [SerializeField] private Transform depotTransportationCostsContainer;
+
+        [SerializeField] private UnityEvent schemaUpdated = new UnityEvent();
         
-        private readonly List<WorkstationBehaviour> _workstationBehaviours = new();
+        private SchemaSaver _schemaSaver;
+        private WorkstationsBehaviourContainer _workstationsBehaviourContainer;
         private readonly List<TransportationCostView> _transportationCostsViews = new();
         private readonly List<DepotTransportationCostView> _depotTransportationCostViews = new();
-        private SchemasOrchestrator _schemasOrchestrator;
         private Schema _schema;
 
-        public void Init(SchemasOrchestrator schemasOrchestrator)
+        public void Init(WorkstationsBehaviourContainer workstationsBehaviourContainer, SchemaSaver schemaSaver)
         {
-            _schemasOrchestrator = schemasOrchestrator;
+            _schemaSaver = schemaSaver;
+            _workstationsBehaviourContainer = workstationsBehaviourContainer;
         }
-
+        
         private void Start()
         {
             addWorkstationButton.onClick.AddListener(OnAddWorkstationButtonClick);
             saveButton.onClick.AddListener(OnSaveButtonClick);
             workstationEditor.DeleteClicked += OnWorkstationDelete;
+            workstationEditor.WorkStationUpdated += schemaUpdated.Invoke;
             amrQuantityInput.onValueChanged.AddListener(OnAmrQuantityChanged);
             amrCapacityInput.onValueChanged.AddListener(OnAmrCapacityChanged);
         }
@@ -58,6 +63,7 @@ namespace Src.Schemas
                 }
 
                 _schema.AmrParameters.Capacity = capacity;
+                schemaUpdated.Invoke();
             }
         }
 
@@ -76,6 +82,7 @@ namespace Src.Schemas
                 }
 
                 _schema.AmrParameters.Quantity = quantity;
+                schemaUpdated.Invoke();
             }
         }
 
@@ -91,20 +98,22 @@ namespace Src.Schemas
                 }
             }
             _transportationCostsViews.RemoveAll(t => Equals(t.TransportationCost.FromStation, obj.workstation) || Equals(t.TransportationCost.ToStation, obj.workstation));
-            _workstationBehaviours.Remove(obj.behaviour);
-            Destroy(obj.behaviour.gameObject);
+            _workstationsBehaviourContainer.DeleteBehaviorForWorkstation(obj.workstation);
+            schemaUpdated.Invoke();
         }
 
         private async void OnSaveButtonClick()
         {
-            try
+            if (_schema == null)
             {
-                await _schemasOrchestrator.UpdateSchema(_schema);
+                return;
             }
-            catch (SchemasServiceException e)
-            {
-                serviceErrorMessage.SetActive(true);
-            }
+            await SaveSchema();
+        }
+        
+        public async Task SaveSchema()
+        {
+            await _schemaSaver.SaveSchema(_schema);
         }
 
         private void OnAddWorkstationButtonClick()
@@ -140,6 +149,7 @@ namespace Src.Schemas
                 }
             }
             _schema.TransportationCosts.AddRange(transportationCosts);
+            schemaUpdated.Invoke();
         }
         
         private void AddDepotTransportationCostView(WorkStation workStation)
@@ -153,7 +163,8 @@ namespace Src.Schemas
         {
             var workstationBehaviour = Instantiate(workstationPrefab, transform);
             workstationBehaviour.Init(workStation, workstationEditor);
-            _workstationBehaviours.Add(workstationBehaviour);
+            workstationBehaviour.PositionChanged += schemaUpdated.Invoke;
+            _workstationsBehaviourContainer.AddWorkstationBehaviour(workstationBehaviour);
         }
         
         private void AddTransportationCosView(TransportationCost transportationCost)
@@ -195,11 +206,7 @@ namespace Src.Schemas
 
         public void Clear()
         {
-            foreach (var workstationBehaviour in _workstationBehaviours)
-            {
-                Destroy(workstationBehaviour.gameObject);
-            }
-            _workstationBehaviours.Clear();
+            _workstationsBehaviourContainer.Clear();
             foreach (var costView in _transportationCostsViews)
             {
                 Destroy(costView.gameObject);
@@ -239,6 +246,7 @@ namespace Src.Schemas
             {
                 depotCostView.UpdateText();
             }
+            schemaUpdated.Invoke();
         }
     }
 }

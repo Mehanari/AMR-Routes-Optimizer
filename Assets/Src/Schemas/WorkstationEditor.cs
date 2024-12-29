@@ -2,7 +2,6 @@
 using System.Linq;
 using Src.Model;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +17,8 @@ namespace Src.Schemas
         private Schema _schema;
         private WorkStation _workStation;
         private WorkstationBehaviour _workstationBehaviour;
+        
+        public event Action WorkStationUpdated;
 
         public event Action<(WorkStation, WorkstationBehaviour)> DeleteClicked;
 
@@ -56,6 +57,7 @@ namespace Src.Schemas
             else
             {
                 _workStation.Demand = demand;
+                WorkStationUpdated?.Invoke();
                 _workstationBehaviour.UpdateText();
             }
         }
@@ -75,6 +77,7 @@ namespace Src.Schemas
                 return;
             }
             _workStation.Name = newName;
+            WorkStationUpdated?.Invoke();
             _workstationBehaviour.UpdateText();
         }
     }

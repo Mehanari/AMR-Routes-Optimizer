@@ -10,11 +10,15 @@ namespace Src.Schemas
         [SerializeField] private TextMeshPro nameText;
         [SerializeField] private TextMeshPro demandText;
         
+        public event Action PositionChanged; 
+        
         private WorkStation _workStation;
         private WorkstationEditor _editor;
         private Camera _camera;
         private const int Decimals = 100;
         private Vector3 _offset;
+        
+        public WorkStation WorkStation => _workStation;
         
         private void Start()
         {
@@ -47,6 +51,7 @@ namespace Src.Schemas
                 _workStation.X = (int)(roundedPosition.x * Decimals);
                 _workStation.Y = (int)(roundedPosition.y * Decimals);
                 transform.position = roundedPosition;
+                PositionChanged?.Invoke();
             }
         }
 
