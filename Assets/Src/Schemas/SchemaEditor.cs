@@ -5,6 +5,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Vector3 = System.Numerics.Vector3;
 
 namespace Src.Schemas
 {
@@ -19,9 +20,12 @@ namespace Src.Schemas
         [SerializeField] private GameObject serviceErrorMessage;
         [SerializeField] private TransportationCostView transportationCostPrefab;
         [SerializeField] private Transform transportationCostsContainer;
+        [SerializeField] private DepotTransportationCostView depotTransportationCostPrefab;
+        [SerializeField] private Transform depotTransportationCostsContainer;
         
         private readonly List<WorkstationBehaviour> _workstationBehaviours = new();
         private readonly List<TransportationCostView> _transportationCostsViews = new();
+        private readonly List<DepotTransportationCostView> _depotTransportationCostViews = new();
         private SchemasOrchestrator _schemasOrchestrator;
         private Schema _schema;
 
@@ -119,6 +123,7 @@ namespace Src.Schemas
         {            
             _schema.WorkStations.Add(workStation);
             AddWorkStationBehaviour(workStation);
+            AddDepotTransportationCostView(workStation);
             var transportationCosts = new List<TransportationCost>();
             foreach (var otherWorkstation in _schema.WorkStations)
             {
@@ -135,6 +140,13 @@ namespace Src.Schemas
                 }
             }
             _schema.TransportationCosts.AddRange(transportationCosts);
+        }
+        
+        private void AddDepotTransportationCostView(WorkStation workStation)
+        {
+            var depotTransportationCostView = Instantiate(depotTransportationCostPrefab, depotTransportationCostsContainer);
+            depotTransportationCostView.Init(workStation);
+            _depotTransportationCostViews.Add(depotTransportationCostView);
         }
         
         private void AddWorkStationBehaviour(WorkStation workStation)
@@ -171,6 +183,7 @@ namespace Src.Schemas
             foreach (var workStation in _schema.WorkStations)
             {
                 AddWorkStationBehaviour(workStation);
+                AddDepotTransportationCostView(workStation);
             }
             foreach (var transportationCost in _schema.TransportationCosts)
             {
@@ -192,6 +205,11 @@ namespace Src.Schemas
                 Destroy(costView.gameObject);
             }
             _transportationCostsViews.Clear();
+            foreach (var depotTransportationCostView in _depotTransportationCostViews)
+            {
+                Destroy(depotTransportationCostView.gameObject);
+            }
+            _depotTransportationCostViews.Clear();
             _schema = null;
             serviceErrorMessage.SetActive(false);
         }
@@ -210,6 +228,16 @@ namespace Src.Schemas
             foreach (var costView in _transportationCostsViews)
             {
                 costView.UpdateText();
+            }
+            foreach (var workStation in _schema.WorkStations)
+            {
+                var depotPosition = Vector2.zero;
+                var depotDistance = Vector2.Distance(new Vector2(workStation.X, workStation.Y), depotPosition);
+                workStation.DepotDistance = (int)depotDistance;
+            }
+            foreach (var depotCostView in _depotTransportationCostViews)
+            {
+                depotCostView.UpdateText();
             }
         }
     }
