@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Src.Model;
 using Src.Schemas;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,8 +19,12 @@ namespace Src.Solutions
         [SerializeField] private GameObject solutionErrorScreen;
         [SerializeField] private GameObject validationWarning;
         [SerializeField] private TextMeshProUGUI validationWarningText;
+        [SerializeField] private SolutionReportView solutionReportView;
+        [SerializeField] private Button solutionReportOpenButton;
         
         private readonly List<Arrow> _arrows = new();
+        private List<Color> _routeColors = new();
+        private SolutionReport _solutionReport;
         private WorkstationsBehaviourContainer _workstationsBehaviourContainer;
         private SchemaSaver _schemaSaver;
         private SolutionsOrchestrator _solutionsOrchestrator;
@@ -44,6 +48,7 @@ namespace Src.Solutions
         {
             _schema = schema;
             _schemaUpdated = false;
+            solutionReportOpenButton.gameObject.SetActive(false);
         }
 
         public void SchemaUpdated()
@@ -59,7 +64,12 @@ namespace Src.Solutions
                 Destroy(arrow.gameObject);
             }
             _arrows.Clear();
+            _routeColors.Clear();
+            _solutionReport = null;
             _schemaUpdated = false;
+            solutionReportView.Clear();
+            solutionReportView.gameObject.SetActive(false);
+            solutionReportOpenButton.gameObject.SetActive(false);
         }
 
         private async void OnSolveClicked()
@@ -81,6 +91,7 @@ namespace Src.Solutions
                 solutionLoadingScreen.SetActive(false);
                 ClearSolution();
                 ShowSolution(solution);
+                GenerateReport(solution);
             }
             catch (SolutionsServiceException e)
             {
@@ -89,11 +100,84 @@ namespace Src.Solutions
             }
         }
 
+        private void GenerateReport(Dictionary<int, List<string>> solution)
+        {
+            var report = new SolutionReport();
+            var totalDemand = 0;
+            foreach (var workstation in _schema.WorkStations)
+            {
+                totalDemand += workstation.Demand;
+            }
+            var amrsUsed = solution.Count;
+            var capacityUsed = amrsUsed * _schema.AmrParameters.Capacity;
+            var totalEfficiency = (float)totalDemand / capacityUsed;
+            var totalCost = 0;
+            var routesCosts = new List<int>();
+            foreach (var route in solution)
+            {
+                var routeCost = 0;
+                var workstationNames = route.Value;
+                for (int i = 0; i < workstationNames.Count; i++)
+                {
+                    var currentStation = _schema.WorkStations.First(w => w.Name == workstationNames[i]);
+                    if (i == 0)
+                    {
+                        routeCost += currentStation.DepotDistance;
+                        continue;
+                    }
+                    if (i == workstationNames.Count - 1)
+                    {
+                        routeCost += currentStation.DepotDistance;
+                        continue;
+                    }
+                    var nextStation = _schema.WorkStations.First(w => w.Name == workstationNames[i + 1]);
+                    var transportationCost = _schema.TransportationCosts.First(t =>
+                        (t.FromStation.Name == currentStation.Name && t.ToStation.Name == nextStation.Name) ||
+                        (t.ToStation.Name == currentStation.Name && t.FromStation.Name == nextStation.Name));
+                    routeCost += transportationCost.Cost;
+                }
+                routesCosts.Add(routeCost);
+                totalCost += routeCost;
+            }
+            var routesDemands = new List<int>();
+            foreach (var route in solution)
+            {
+                var routeDemand = 0;
+                foreach (var workstationName in route.Value)
+                {
+                    var workstation = _schema.WorkStations.First(w => w.Name == workstationName);
+                    routeDemand += workstation.Demand;
+                }
+                routesDemands.Add(routeDemand);
+            }
+            var routesEfficiencies = new List<float>();
+            foreach (var demand in routesDemands)
+            {
+                routesEfficiencies.Add((float)demand / _schema.AmrParameters.Capacity);
+            }
+            
+            report.TotalCost = totalCost;
+            report.TotalEfficiency = totalEfficiency;
+            for (int i = 0; i < solution.Count; i++)
+            {
+                var amrReport = new AmrReport();
+                amrReport.Cost = routesCosts[i];
+                amrReport.Efficiency = routesEfficiencies[i];
+                amrReport.AmrName = $"AMR {i + 1}";
+                amrReport.RouteColor = _routeColors[i];
+                report.AmrReports.Add(amrReport);
+            }
+            _solutionReport = report;
+            solutionReportView.SetSolutionReport(report);
+            solutionReportOpenButton.gameObject.SetActive(true);
+        }
+
         private void ShowSolution(Dictionary<int, List<string>> solution)
         {
             foreach (var route in solution)
             {
                 var routeColor = GetRandomColor();
+                _routeColors.Add(routeColor);
                 var workstationNames = route.Value;
                 for (int i = 0; i < workstationNames.Count; i++)
                 {
